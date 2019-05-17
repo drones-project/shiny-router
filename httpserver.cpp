@@ -37,19 +37,13 @@ int main() {
 
     // POST response for /route endpoint
     server.resource["^/route$"]["POST"] = [](shared_ptr<HttpServer::Response> response, shared_ptr<HttpServer::Request> request) {
-        try {
-            string data = request->content.string();
-            // create response header
-            SimpleWeb::CaseInsensitiveMultimap header;
-            header.emplace("Content-Type", "application/json");
-            // send response
-            string route = pathfinder.getRoute(data);
-            response->write(route, header);
-        }
-        // if not json, return 400
-        catch (const exception & e) {
-            response->write(SimpleWeb::StatusCode::client_error_bad_request, e.what());
-        }
+        string data = request->content.string();
+        // create response header
+        SimpleWeb::CaseInsensitiveMultimap header;
+        header.emplace("Content-Type", "application/json");
+        // get route and send as response
+        string route = pathfinder.getRoute(data);
+        response->write(route, header);
     };
 
     // GET method for /route endpoint
@@ -68,5 +62,6 @@ int main() {
     thread server_thread([&server]() {
         server.start();
     });
+    
     server_thread.join();
 }
