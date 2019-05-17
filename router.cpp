@@ -1,5 +1,6 @@
 #include "http/server_http.hpp"
 #include "pathfinder/RayPath.hpp"
+#include "utils/logging.hpp"
 
 // Added for the json-example
 #define BOOST_SPIRIT_THREADSAFE
@@ -13,6 +14,9 @@
 #include <vector>
 #include <string>
 #include <iostream>
+// For logging
+#include <chrono>
+#include <ctime>
 
 using namespace std;
 using namespace boost::property_tree;
@@ -30,6 +34,7 @@ int main(int argc, char *argv[]) {
 
     // POST response for /route endpoint
     server.resource["^/route$"]["POST"] = [&pathfinder](shared_ptr<HttpServer::Response> response, shared_ptr<HttpServer::Request> request) {
+        logging::log("POST /route");
         string data = request->content.string();
         // create response header
         SimpleWeb::CaseInsensitiveMultimap header;
@@ -41,6 +46,7 @@ int main(int argc, char *argv[]) {
 
     // GET method for /route endpoint
     server.resource["^/route$"]["GET"] = [](shared_ptr<HttpServer::Response>response, shared_ptr<HttpServer::Request> request) {
+        logging::log("GET /route");
         SimpleWeb::CaseInsensitiveMultimap header;
         header.emplace("Content-Type", "application/json");
         response->write("{\"success\": true}", header);
@@ -56,7 +62,7 @@ int main(int argc, char *argv[]) {
         server.start();
     });
 
-    cout << "Server started..." << endl;
+    logging::log("Server started...");
 
     server_thread.join();
 }
