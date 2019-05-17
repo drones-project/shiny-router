@@ -1,4 +1,5 @@
 #include "http/server_http.hpp"
+#include "pathfinder/RayPath.hpp"
 
 // Added for the json-example
 #define BOOST_SPIRIT_THREADSAFE
@@ -11,32 +12,24 @@
 #include <fstream>
 #include <vector>
 #include <string>
+#include <iostream>
 
 using namespace std;
 using namespace boost::property_tree;
 
 using HttpServer = SimpleWeb::Server<SimpleWeb::HTTP>;
 
-/* STUB PATHFINDER */
-class StubPathfinder {
-public:
-    string getRoute(string);
-};
-
-string StubPathfinder::getRoute(string data) {
-    return "{\"waypoints\": {\"x\": 0, \"y\": 0, \"z\": 0}}";
-}
-
-// replace this line with actual pathfinder
-StubPathfinder pathfinder = StubPathfinder();
-
-int main() {
-    // initialize the server
+int main(int argc, char *argv[]) {
+    // Initialize the server
     HttpServer server;
-    server.config.port = 8080;
+    server.config.port = 5000;
+
+    // Initialize pathfinder
+    string filename = "data/buildings.json";
+    RayPath pathfinder = RayPath(filename);
 
     // POST response for /route endpoint
-    server.resource["^/route$"]["POST"] = [](shared_ptr<HttpServer::Response> response, shared_ptr<HttpServer::Request> request) {
+    server.resource["^/route$"]["POST"] = [&pathfinder](shared_ptr<HttpServer::Response> response, shared_ptr<HttpServer::Request> request) {
         string data = request->content.string();
         // create response header
         SimpleWeb::CaseInsensitiveMultimap header;
@@ -62,6 +55,8 @@ int main() {
     thread server_thread([&server]() {
         server.start();
     });
-    
+
+    cout << "Server started..." << endl;
+
     server_thread.join();
 }
